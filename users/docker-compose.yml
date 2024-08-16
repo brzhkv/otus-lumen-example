@@ -1,0 +1,43 @@
+services:
+  app:
+    image: php:8.3-alpine-pgsql
+    build:
+      context: .
+    hostname: users_app
+    networks:
+      - local
+    ports:
+      - '8000:80'
+    volumes:
+      - '.:/app'
+    entrypoint:
+      - 'php'
+      - '-S'
+      - '0.0.0.0:80'
+      - '-t'
+      - '/app/public'
+
+  pgsql:
+    image: 'postgres:15'
+    hostname: users_pgsql
+    networks:
+      - local
+    ports:
+      - '${FORWARD_DB_PORT:-5432}:5432'
+    environment:
+      PGPASSWORD: '${DB_PASSWORD:-secret}'
+      POSTGRES_DB: '${DB_DATABASE}'
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+    volumes:
+      - 'pgsql:/var/lib/postgresql/data'
+
+networks:
+  local:
+    name: lumen_example
+    driver: bridge
+    external: true
+
+volumes:
+  pgsql:
+    driver: local

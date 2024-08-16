@@ -1,0 +1,41 @@
+services:
+  app:
+    image: php:8.3-alpine-pgsql
+    hostname: orders_app
+    networks:
+      - local
+    ports:
+      - '8001:80'
+    volumes:
+      - '.:/app'
+    entrypoint:
+      - 'php'
+      - '-S'
+      - '0.0.0.0:80'
+      - '-t'
+      - '/app/public'
+
+  pgsql:
+    image: 'postgres:15'
+    hostname: orders_pgsql
+    networks:
+      - local
+    ports:
+      - '${FORWARD_DB_PORT:-5433}:5432/tcp'
+    environment:
+      PGPASSWORD: '${DB_PASSWORD:-secret}'
+      POSTGRES_DB: '${DB_DATABASE}'
+      POSTGRES_USER: '${DB_USERNAME}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD:-secret}'
+    volumes:
+      - 'pgsql:/var/lib/postgresql/data'
+
+networks:
+  local:
+    name: lumen_example
+    driver: bridge
+    external: true
+
+volumes:
+  pgsql:
+    driver: local
